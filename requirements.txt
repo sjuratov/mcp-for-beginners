@@ -1,0 +1,8 @@
+mcp[cli]
+openai>=1.0.0
+azure-ai-inference
+azure-ai-projects
+azure-identity
+asyncio
+python-dotenv
+fastapi

@@ -1,6 +1,23 @@
 # Running this sample
 
+This sample demonstrates an MCP client that integrates with Azure OpenAI for LLM capabilities.
+
 You're recommended to install `uv` but it's not a must, see [instructions](https://docs.astral.sh/uv/#highlights)
+
+## Prerequisites
+
+Before running this sample, you need to set up Azure OpenAI and configure the required environment variables.
+
+### Environment Variables
+
+Create a `.env` file in this directory or set the following environment variables:
+
+```bash
+export AZURE_OPENAI_API_KEY="your-api-key-here"
+export AZURE_OPENAI_ENDPOINT="https://your-resource.openai.azure.com"
+export AZURE_OPENAI_DEPLOYMENT_NAME="gpt-4o"  # Optional, defaults to 'gpt-4o'
+export AZURE_OPENAI_API_VERSION="2024-02-01"  # Optional, defaults to '2024-02-01'
+```
 
 ## -0- Create a virtual environment
 
@@ -11,15 +28,21 @@ python -m venv venv
 ## -1- Activate the virtual environment
 
 ```bash
-venv\Scrips\activate
+venv\Scripts\activate
 ```
 
 ## -2- Install the dependencies
 
 ```bash
+pip install -r requirements.txt
+```
+
+Or install manually:
+
+```bash
 pip install "mcp[cli]"
 pip install openai
-pip install azure-ai-inference
+pip install python-dotenv
 ```
 
 ## -3- Run the sample

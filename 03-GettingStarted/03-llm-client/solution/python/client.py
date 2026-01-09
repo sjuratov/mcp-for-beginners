@@ -1,12 +1,32 @@
+"""
+MCP Client with Azure OpenAI Integration
+
+This client connects to an MCP server and uses Azure OpenAI for LLM capabilities.
+
+Required environment variables:
+- AZURE_OPENAI_API_KEY: Your Azure OpenAI API key
+- AZURE_OPENAI_ENDPOINT: Your Azure OpenAI endpoint URL
+- AZURE_OPENAI_DEPLOYMENT_NAME: Your Azure OpenAI deployment name (optional, defaults to 'gpt-4o')
+- AZURE_OPENAI_API_VERSION: API version to use (optional, defaults to '2024-02-01')
+
+Example:
+    export AZURE_OPENAI_API_KEY="your-api-key-here"
+    export AZURE_OPENAI_ENDPOINT="https://your-resource.openai.azure.com"
+    export AZURE_OPENAI_DEPLOYMENT_NAME="gpt-4o"
+    export AZURE_OPENAI_API_VERSION="2024-02-01"
+"""
+
 from mcp import ClientSession, StdioServerParameters, types
 from mcp.client.stdio import stdio_client
 
 # llm
 import os
-from azure.ai.inference import ChatCompletionsClient
-from azure.ai.inference.models import SystemMessage, UserMessage
-from azure.core.credentials import AzureKeyCredential
+from openai import AzureOpenAI
 import json
+from dotenv import load_dotenv
+
+# Load environment variables from .env file
+load_dotenv()
 
 # Create server parameters for stdio connection
 server_params = StdioServerParameters(
@@ -16,34 +36,39 @@ server_params = StdioServerParameters(
 )
 
 def call_llm(prompt, functions):
-    token = os.environ["GITHUB_TOKEN"]
-    endpoint = "https://models.inference.ai.azure.com"
+    # Azure OpenAI configuration
+    # These should be set as environment variables
+    azure_openai_api_key = os.environ.get("AZURE_OPENAI_API_KEY")
+    azure_openai_endpoint = os.environ.get("AZURE_OPENAI_ENDPOINT")
+    azure_openai_deployment = os.environ.get("AZURE_OPENAI_DEPLOYMENT_NAME", "gpt-4o")
+    azure_openai_api_version = os.environ.get("AZURE_OPENAI_API_VERSION", "2024-02-01")
+    
+    if not azure_openai_api_key or not azure_openai_endpoint:
+        raise ValueError("Azure OpenAI API key and endpoint must be set as environment variables")
 
-    model_name = "gpt-4o"
-
-    client = ChatCompletionsClient(
-        endpoint=endpoint,
-        credential=AzureKeyCredential(token),
+    client = AzureOpenAI(
+        api_key=azure_openai_api_key,
+        api_version=azure_openai_api_version,
+        azure_endpoint=azure_openai_endpoint
     )
 
     print("CALLING LLM")
-    response = client.complete(
+    response = client.chat.completions.create(
+        model=azure_openai_deployment,
         messages=[
             {
-            "role": "system",
-            "content": "You are a helpful assistant.",
+                "role": "system",
+                "content": "You are a helpful assistant.",
             },
             {
-            "role": "user",
-            "content": prompt,
+                "role": "user",
+                "content": prompt,
             },
         ],
-        model=model_name,
-        tools = functions,
-        # Optional parameters
-        temperature=1.,
+        tools=functions,
+        temperature=1.0,
         max_tokens=1000,
-        top_p=1.    
+        top_p=1.0
     )
 
     response_message = response.choices[0].message
